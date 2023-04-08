@@ -1,0 +1,44 @@
+version: '3'
+services:
+  database:
+    image: postgres:12-alpine
+    env_file:
+      - .env
+    container_name: kpd-database
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    ports:
+      - '5432:5432'
+    restart: on-failure
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: backend
+    env_file:
+      - .env
+    depends_on:
+      - database
+    container_name: kpd-backend
+    networks:
+      - backend-network
+    ports:
+      - '4000:4000'
+    restart: on-failure
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontend
+    depends_on:
+      - backend
+    container_name: kpd-frontend
+    ports:
+      - '8081:80'
+    restart: on-failure
+networks:
+  backend-network:
+volumes:
+  database:
